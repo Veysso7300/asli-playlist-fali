@@ -120,12 +120,12 @@
       const data = await res.json();
 
       if (!data.configured){
-        errorBox.textContent = 'Site henüz kurulum aşamasında — birazdan tekrar deneyin.';
+        errorBox.textContent = 'Site henüz kurulum aşamasında — Client ID/Secret eklenmemiş.';
         errorBox.classList.add('show');
         return;
       }
       if (data.error || !data.name){
-        errorBox.textContent = 'Bir şeyler ters gitti, tekrar dener misiniz?';
+        errorBox.textContent = 'Hata: ' + (data.error || 'bilinmeyen') + (data.detail ? ' — ' + JSON.stringify(data.detail).slice(0,200) : '');
         errorBox.classList.add('show');
         return;
       }
