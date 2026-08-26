@@ -1,21 +1,25 @@
 // Aslı'nın Playlist Falı — belirli bir Spotify playlist'inden rastgele şarkı önerir.
-// Client Credentials akışı kullanılır (kullanıcı girişi gerekmez, sadece uygulama yetkisi).
+// Playlist herkese açık olmadığı için kullanıcı yetkili erişim (refresh token) kullanılır.
 // Gerekli ortam değişkenleri (Netlify > Site configuration > Environment variables):
 //   SPOTIFY_CLIENT_ID
 //   SPOTIFY_CLIENT_SECRET
+//   SPOTIFY_REFRESH_TOKEN   (spotify-callback.js ile bir kez alınır)
 
 const PLAYLIST_ID = "2Bh2IYRIViPQWdyq56kHI6";
 
 exports.handler = async function () {
-  const { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET } = process.env;
+  const { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REFRESH_TOKEN } = process.env;
   const cors = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
 
   if (!SPOTIFY_CLIENT_ID || !SPOTIFY_CLIENT_SECRET) {
     return { statusCode: 200, headers: cors, body: JSON.stringify({ configured: false }) };
   }
+  if (!SPOTIFY_REFRESH_TOKEN) {
+    return { statusCode: 200, headers: cors, body: JSON.stringify({ configured: false, needs_auth: true }) };
+  }
 
   try {
-    // 1) uygulama seviyesinde erişim token'ı al (kullanıcı girişi gerekmez)
+    // 1) refresh token ile taze bir access token al (kullanıcı yetkili)
     const basic = Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString("base64");
     const tokenRes = await fetch("https://accounts.spotify.com/api/token", {
       method: "POST",
@@ -23,7 +27,10 @@ exports.handler = async function () {
         "Content-Type": "application/x-www-form-urlencoded",
         Authorization: `Basic ${basic}`,
       },
-      body: new URLSearchParams({ grant_type: "client_credentials" }),
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: SPOTIFY_REFRESH_TOKEN,
+      }),
     });
     if (!tokenRes.ok) {
       const t = await tokenRes.text();

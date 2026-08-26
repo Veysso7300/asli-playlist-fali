@@ -120,7 +120,9 @@
       const data = await res.json();
 
       if (!data.configured){
-        errorBox.textContent = 'Site henüz kurulum aşamasında — Client ID/Secret eklenmemiş.';
+        errorBox.textContent = data.needs_auth
+          ? 'Henüz yetkilendirme yapılmadı — kurulum tamamlanmayı bekliyor.'
+          : 'Site henüz kurulum aşamasında — Client ID/Secret eklenmemiş.';
         errorBox.classList.add('show');
         return;
       }
