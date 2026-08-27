@@ -38,6 +38,18 @@ exports.handler = async function () {
     }
     const { access_token } = await tokenRes.json();
 
+    // TEŞHİS: hangi hesap yetkilendirilmiş, kontrol edelim
+    let whoAmI = null;
+    try {
+      const meRes = await fetch("https://api.spotify.com/v1/me", {
+        headers: { Authorization: `Bearer ${access_token}` },
+      });
+      if (meRes.ok) {
+        const me = await meRes.json();
+        whoAmI = { id: me.id, display_name: me.display_name, email: me.email };
+      }
+    } catch (e) {}
+
     // 2) playlist'teki toplam şarkı sayısını öğren
     const countRes = await fetch(
       `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks?fields=total&limit=1`,
@@ -45,7 +57,7 @@ exports.handler = async function () {
     );
     if (!countRes.ok) {
       const t = await countRes.text();
-      return { statusCode: 200, headers: cors, body: JSON.stringify({ configured: true, error: "playlist_failed", detail: t }) };
+      return { statusCode: 200, headers: cors, body: JSON.stringify({ configured: true, error: "playlist_failed", detail: t, authorized_as: whoAmI }) };
     }
     const { total } = await countRes.json();
     if (!total || total < 1) {

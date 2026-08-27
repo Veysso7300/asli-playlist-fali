@@ -127,7 +127,11 @@
         return;
       }
       if (data.error || !data.name){
-        errorBox.textContent = 'Hata: ' + (data.error || 'bilinmeyen') + (data.detail ? ' — ' + JSON.stringify(data.detail).slice(0,200) : '');
+        let msg = 'Hata: ' + (data.error || 'bilinmeyen');
+        if (data.authorized_as){
+          msg += ` — Yetkili hesap: ${data.authorized_as.display_name || data.authorized_as.id}`;
+        }
+        errorBox.textContent = msg;
         errorBox.classList.add('show');
         return;
       }
