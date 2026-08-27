@@ -50,14 +50,30 @@ exports.handler = async function () {
       }
     } catch (e) {}
 
-    // 2) playlist'teki toplam şarkı sayısını öğren
+    // 2) playlist'in temel bilgilerini öğren (sahibi kim, public mi?)
+    const metaRes = await fetch(
+      `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}?fields=name,public,collaborative,owner(id,display_name)`,
+      { headers: { Authorization: `Bearer ${access_token}` } }
+    );
+    let playlistMeta = null;
+    let metaError = null;
+    if (metaRes.ok) {
+      playlistMeta = await metaRes.json();
+    } else {
+      metaError = await metaRes.text();
+    }
+
+    // 3) playlist'teki toplam şarkı sayısını öğren
     const countRes = await fetch(
       `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks?fields=total&limit=1`,
       { headers: { Authorization: `Bearer ${access_token}` } }
     );
     if (!countRes.ok) {
       const t = await countRes.text();
-      return { statusCode: 200, headers: cors, body: JSON.stringify({ configured: true, error: "playlist_failed", detail: t, authorized_as: whoAmI }) };
+      return { statusCode: 200, headers: cors, body: JSON.stringify({
+        configured: true, error: "playlist_failed", detail: t, authorized_as: whoAmI,
+        playlist_meta: playlistMeta, playlist_meta_error: metaError,
+      }) };
     }
     const { total } = await countRes.json();
     if (!total || total < 1) {

@@ -129,10 +129,17 @@
       if (data.error || !data.name){
         let msg = 'Hata: ' + (data.error || 'bilinmeyen');
         if (data.authorized_as){
-          msg += ` — Yetkili hesap: ${data.authorized_as.display_name || data.authorized_as.id}`;
+          msg += ` — Yetkili: ${data.authorized_as.display_name || data.authorized_as.id} (${data.authorized_as.id})`;
+        }
+        if (data.playlist_meta){
+          const m = data.playlist_meta;
+          msg += ` — Playlist sahibi: ${m.owner ? (m.owner.display_name || m.owner.id) + ' ('+m.owner.id+')' : '?'}, public:${m.public}, collab:${m.collaborative}`;
+        }
+        if (data.playlist_meta_error){
+          msg += ` — Meta hatası: ${data.playlist_meta_error}`;
         }
         if (data.detail){
-          msg += ' — ' + JSON.stringify(data.detail).slice(0, 200);
+          msg += ' — ' + JSON.stringify(data.detail).slice(0, 150);
         }
         errorBox.textContent = msg;
         errorBox.classList.add('show');
