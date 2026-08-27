@@ -18,7 +18,24 @@ exports.handler = async function (event) {
         .box{max-width:560px;margin:0 auto;background:#3b1f3d;border-radius:16px;padding:28px}
         code{background:#241220;padding:10px 14px;border-radius:8px;display:block;margin:14px 0;word-break:break-all;color:#d9a441;font-size:13px}
         h1{font-size:20px}
-      </style></head><body><div class="box"><h1>${title}</h1>${body}</div></body></html>`,
+        .copybtn{width:100%;padding:14px;border:none;border-radius:10px;background:#d9a441;color:#241220;font-weight:700;font-size:15px;cursor:pointer;margin-top:4px}
+        .copybtn.done{background:#5ec98f}
+      </style></head><body><div class="box"><h1>${title}</h1>${body}</div></body>
+      <script>
+        function copyToken(){
+          const el = document.getElementById('rtoken');
+          const btn = document.getElementById('copybtn');
+          if (!el) return;
+          navigator.clipboard.writeText(el.textContent.trim()).then(() => {
+            btn.textContent = '✅ Kopyalandı!';
+            btn.classList.add('done');
+            setTimeout(() => { btn.textContent = '📋 Tekrar Kopyala'; btn.classList.remove('done'); }, 2000);
+          }).catch(() => {
+            btn.textContent = 'Kopyalanamadı, elle seçip kopyalayın';
+          });
+        }
+      </script>
+      </html>`,
   });
 
   if (!SPOTIFY_CLIENT_ID || !SPOTIFY_CLIENT_SECRET) {
@@ -59,8 +76,9 @@ exports.handler = async function (event) {
       "Başarılı ✅ — Bu değeri kopyalayın",
       `<p>Aşağıdaki <b>refresh_token</b> değerini kopyalayıp Netlify > Site configuration > Environment variables kısmına
        <code>SPOTIFY_REFRESH_TOKEN</code> adıyla ekleyin.</p>
-       <code>${data.refresh_token}</code>
-       <p>Ekledikten sonra bu <code>spotify-callback.js</code> dosyasını silebilirsiniz.</p>`
+       <code id="rtoken">${data.refresh_token}</code>
+       <button class="copybtn" id="copybtn" onclick="copyToken()">📋 Kopyala</button>
+       <p style="margin-top:18px">Ekledikten sonra bu <code style="display:inline;padding:2px 6px">spotify-callback.js</code> dosyasını silebilirsiniz.</p>`
     );
   } catch (err) {
     return html("Hata", `<p>${String(err)}</p>`);
