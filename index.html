@@ -131,6 +131,9 @@
         if (data.authorized_as){
           msg += ` — Yetkili hesap: ${data.authorized_as.display_name || data.authorized_as.id}`;
         }
+        if (data.detail){
+          msg += ' — ' + JSON.stringify(data.detail).slice(0, 200);
+        }
         errorBox.textContent = msg;
         errorBox.classList.add('show');
         return;
