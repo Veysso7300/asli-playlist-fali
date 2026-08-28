@@ -63,9 +63,9 @@ exports.handler = async function () {
       metaError = await metaRes.text();
     }
 
-    // 3) playlist'teki toplam şarkı sayısını öğren
+    // 3) playlist'teki toplam şarkı sayısını öğren (Şubat 2026'dan itibaren /items uç noktası)
     const countRes = await fetch(
-      `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks?fields=total&limit=1`,
+      `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/items?fields=total&limit=1`,
       { headers: { Authorization: `Bearer ${access_token}` } }
     );
     if (!countRes.ok) {
@@ -80,14 +80,14 @@ exports.handler = async function () {
       return { statusCode: 200, headers: cors, body: JSON.stringify({ configured: true, error: "empty_playlist" }) };
     }
 
-    // 3) rastgele bir konumdan tek şarkı çek
+    // 3) rastgele bir konumdan tek şarkı çek (items.item — Şubat 2026 alan adı değişikliği)
     const offset = Math.floor(Math.random() * total);
     const trackRes = await fetch(
-      `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks?offset=${offset}&limit=1&fields=items(track(id,name,artists(name),album(name,images),external_urls,preview_url))`,
+      `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/items?offset=${offset}&limit=1&fields=items(item(id,name,artists(name),album(name,images),external_urls,preview_url))`,
       { headers: { Authorization: `Bearer ${access_token}` } }
     );
     const data = await trackRes.json();
-    const item = data.items && data.items[0] && data.items[0].track;
+    const item = data.items && data.items[0] && data.items[0].item;
     if (!item) {
       return { statusCode: 200, headers: cors, body: JSON.stringify({ configured: true, error: "track_not_found" }) };
     }
